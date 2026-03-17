@@ -1,0 +1,149 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giriş Yap | Usta Yapı</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #FFC107;
+            --dark: #1a1a1a;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+        }
+
+        .login-title {
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .form-control {
+            border-radius: 50px;
+            padding: 12px 20px;
+        }
+
+            .form-control:focus {
+                border-color: var(--primary);
+                box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+            }
+
+        .btn-login {
+            background: var(--primary);
+            border: none;
+            border-radius: 50px;
+            padding: 12px;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+            .btn-login:hover {
+                background: #fff;
+                color: var(--primary);
+                border: 1px solid var(--primary);
+            }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+
+            .logo span {
+                color: var(--primary);
+            }
+
+        .form-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            z-index: 10;
+        }
+
+        .input-group-custom {
+            position: relative;
+        }
+
+            .input-group-custom input {
+                padding-left: 45px;
+            }
+
+        .extra-links a {
+            text-decoration: none;
+            color: var(--dark);
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+
+            .extra-links a:hover {
+                color: var(--primary);
+            }
+
+    </style>
+</head>
+
+<body>
+
+    <div class="login-card">
+        <div class="text-center mb-4">
+            <div class="logo">
+                <i class="fas fa-hammer"></i> USTA<span>YAPI</span>
+            </div>
+            <h4 class="login-title mt-3">Hoş Geldiniz</h4>
+            <p class="text-muted small">Yönetim paneline giriş yapın</p>
+        </div>
+
+        <form action="/Account/Login" method="post">
+
+            <div class="mb-3 input-group-custom">
+                <i class="fas fa-envelope form-icon"></i>
+                <input type="email" name="Email" class="form-control" placeholder="E-posta adresi" required>
+            </div>
+
+            <div class="mb-4 input-group-custom">
+                <i class="fas fa-lock form-icon"></i>
+                <input type="password" name="Password" class="form-control" placeholder="Şifre" required>
+            </div>
+
+            <button type="submit" class="btn btn-login w-100">Giriş Yap</button>
+        </form>
+
+        <div class="text-center mt-4 extra-links">
+            <a href="/Home/Index"><i class="fas fa-arrow-left me-1"></i> Ana Sayfaya Dön</a>
+        </div>
+    </div>
+
+</body>
+
+</html>

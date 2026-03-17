@@ -1,0 +1,184 @@
+﻿@{
+    ViewData["Title"] = "Premium İnşaat & Dekorasyon";
+}
+
+@section Styles {
+    <style>
+        .hero {
+            height: 100vh;
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            display: flex;
+            align-items: center;
+            color: white;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 20px;
+        }
+
+        .service-box {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 20px;
+            transition: all 0.4s ease;
+            border-bottom: 5px solid transparent;
+        }
+
+            .service-box:hover {
+                transform: translateY(-10px);
+                border-bottom: 5px solid var(--primary);
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            }
+
+        .icon-circle {
+            width: 70px;
+            height: 70px;
+            background: rgba(255, 193, 7, 0.1);
+            color: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            transition: 0.3s;
+        }
+
+        .service-box:hover .icon-circle {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* İletişim (CTA) Alanı İçin CSS */
+        .footer-cta {
+            background: var(--dark);
+            color: white;
+            padding: 80px 0;
+            position: relative;
+            overflow: hidden;
+        }
+    </style>
+}
+
+<section id="anasayfa" class="hero">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8" data-aos="fade-up" data-aos-duration="1000">
+                <h5 class="text-warning text-uppercase letter-spacing-2 fw-bold mb-3">Profesyonel Çözümler</h5>
+                <h1 class="hero-title">Hayalinizdeki Yapıyı<br>Gerçeğe Dönüştürüyoruz</h1>
+                <p class="lead mb-5 text-white-50">20 yıllık tecrübe, kaliteli malzeme ve zamanında teslimat garantisi ile hizmetinizdeyiz.</p>
+                <a href="/Home/Projeler" class="btn btn-modern me-3">Projeleri Gör</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="bg-dark text-white py-5">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                <h2 class="fw-bold text-warning display-4">150+</h2><p class="mb-0">Tamamlanan Proje</p>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                <h2 class="fw-bold text-warning display-4">20</h2><p class="mb-0">Yıllık Tecrübe</p>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                <h2 class="fw-bold text-warning display-4">%100</h2><p class="mb-0">Müşteri Memnuniyeti</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section id="hizmetler" class="py-5 bg-light">
+    <div class="container py-5">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h6 class="text-warning fw-bold text-uppercase">Hizmetlerimiz</h6>
+            <h2 class="fw-bold display-5">Neler Yapıyoruz?</h2>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="service-box">
+                    <div class="icon-circle"><i class="fas fa-paint-roller"></i></div>
+                    <h4>Boya & Dekorasyon</h4>
+                    <p class="text-muted">İç ve dış cephe boya, alçıpan, asma tavan ve dekoratif uygulamalar.</p>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="service-box">
+                    <div class="icon-circle"><i class="fas fa-trowel-bricks"></i></div>
+                    <h4>Anahtar Teslim İnşaat</h4>
+                    <p class="text-muted">Kaba inşaattan ince işçiliğe kadar tüm süreci yönetiyoruz.</p>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="service-box">
+                    <div class="icon-circle"><i class="fas fa-hammer"></i></div>
+                    <h4>Tadilat & Yenileme</h4>
+                    <p class="text-muted">Mutfak, banyo ve komple ev tadilatı ile yaşam alanınızı yenileyin.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="projeler" class="py-5">
+    <div class="container py-5">
+        <div class="d-flex justify-content-between align-items-end mb-5" data-aos="fade-right">
+            <div>
+                <h6 class="text-warning fw-bold text-uppercase">Portfolyo</h6>
+                <h2 class="fw-bold display-5">Son Çalışmalarımız</h2>
+            </div>
+            <a href="/Home/Projeler" class="btn btn-outline-dark rounded-pill d-none d-md-block">Tümünü Gör <i class="fas fa-arrow-right ms-2"></i></a>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-4" data-aos="zoom-in" data-aos-delay="100">
+                <div class="portfolio-item">
+                    <img src="https://images.unsplash.com/photo-1484154218962-a1c002085d2f?auto=format&fit=crop&w=500&q=80" alt="Mutfak Tadilatı">
+                    <div class="portfolio-overlay">
+                        <div class="text-center text-white">
+                            <h5 class="fw-bold">Modern Mutfak</h5>
+                            <p class="small">Tadilat & Dekorasyon</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="zoom-in" data-aos-delay="200">
+                <div class="portfolio-item">
+                    <img src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=500&q=80" alt="Banyo Yenileme">
+                    <div class="portfolio-overlay">
+                        <div class="text-center text-white">
+                            <h5 class="fw-bold">Lüks Banyo</h5>
+                            <p class="small">Fayans & Tesisat</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="zoom-in" data-aos-delay="300">
+                <div class="portfolio-item">
+                    <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=500&q=80" alt="Salon Dekorasyon">
+                    <div class="portfolio-overlay">
+                        <div class="text-center text-white">
+                            <h5 class="fw-bold">Villa Salonu</h5>
+                            <p class="small">Boya & Alçıpan</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="iletisim" class="footer-cta text-center">
+    <div class="container" data-aos="fade-up">
+        <h2 class="display-4 fw-bold mb-4">Evinizi Yenilemeye Hazır mısınız?</h2>
+        <p class="lead mb-5 text-white-50">Keşif ve fiyat teklifi için hemen bizi arayın, hayallerinizi ertelemeyin.</p>
+        <a href="tel:05000000000" class="btn btn-modern btn-lg px-5 py-3 bg-white text-dark"><i class="fas fa-phone-alt me-2"></i>0500 000 00 00</a>
+    </div>
+</section>

@@ -1,0 +1,48 @@
+-- 1. Projects (Projeler) Tablosunun Oluşturulması
+CREATE TABLE [Projects] (
+    [Id] INT IDENTITY(1,1) NOT NULL,
+    [Title] NVARCHAR(200) NOT NULL,
+    [Description] NVARCHAR(MAX) NULL,
+    [Category] NVARCHAR(100) NOT NULL,
+    [Year] INT NOT NULL,
+    [CreatedDate] DATETIME2 NOT NULL DEFAULT GETDATE(),
+    CONSTRAINT [PK_Projects] PRIMARY KEY ([Id])
+);
+GO
+
+-- 2. ProjectImages (Proje Resimleri) Tablosunun Oluşturulması
+CREATE TABLE [ProjectImages] (
+    [Id] INT IDENTITY(1,1) NOT NULL,
+    [ImageUrl] NVARCHAR(MAX) NOT NULL,
+    [ProjectId] INT NOT NULL,
+    [IsCover] BIT NOT NULL DEFAULT 0,
+    [Order] INT NOT NULL DEFAULT 0,
+    CONSTRAINT [PK_ProjectImages] PRIMARY KEY ([Id]),
+    -- Cascade Delete İlişkisi (Senin DbContext'te yazdığın kural)
+    CONSTRAINT [FK_ProjectImages_Projects_ProjectId] FOREIGN KEY ([ProjectId]) 
+        REFERENCES [Projects] ([Id]) ON DELETE CASCADE
+);
+GO
+
+-- ProjectId alanı için performansı artıracak bir Index
+CREATE INDEX [IX_ProjectImages_ProjectId] ON [ProjectImages] ([ProjectId]);
+GO
+
+-- 3. Users (Kullanıcılar) Tablosunun Oluşturulması
+CREATE TABLE [Users] (
+    [Id] UNIQUEIDENTIFIER NOT NULL, -- Guid karşılığı
+    [FullName] NVARCHAR(100) NOT NULL,
+    [Email] NVARCHAR(150) NOT NULL,
+    [PasswordHash] NVARCHAR(MAX) NOT NULL,
+    [PasswordSalt] NVARCHAR(MAX) NOT NULL,
+    [Role] NVARCHAR(50) NULL DEFAULT 'Admin',
+    [IsActive] BIT NOT NULL DEFAULT 1,
+    [CreatedAt] DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+    [LastLoginAt] DATETIME2 NULL,
+    CONSTRAINT [PK_Users] PRIMARY KEY ([Id])
+);
+GO
+
+-- DbContext'te belirttiğin Email'in Unique (Benzersiz) olma kuralı
+CREATE UNIQUE INDEX [IX_Users_Email] ON [Users] ([Email]);
+GO

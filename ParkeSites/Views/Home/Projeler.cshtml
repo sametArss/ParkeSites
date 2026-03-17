@@ -1,0 +1,116 @@
+﻿@{
+    ViewData["Title"] = "Projelerimiz";
+}
+
+@section Styles {
+    <style>
+        .page-header {
+            background: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            height: 40vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            margin-top: 70px;
+        }
+
+        /* Projeler sayfasının altındaki siyah CTA (İletişim) alanı için */
+        .projects-cta {
+            background-color: var(--dark);
+            color: white;
+            text-align: center;
+            padding: 80px 0;
+        }
+
+            .projects-cta h3 {
+                font-weight: 700;
+                margin-bottom: 15px;
+            }
+    </style>
+}
+
+<section class="page-header">
+    <div class="container" data-aos="fade-up">
+        <h1 class="display-3 fw-bold">Projelerimiz</h1>
+        <p class="lead">İmzamızı attığımız, gurur duyduğumuz işler.</p>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row" data-aos="fade-up" data-aos-delay="100">
+            <div class="col-lg-12 d-flex justify-content-center">
+                <ul class="portfolio-filters">
+                    <li data-filter="*" class="filter-active">Tümü</li>
+                    <li data-filter=".filter-tadilat">Tadilat & Dekorasyon</li>
+                    <li data-filter=".filter-insaat">Kaba İnşaat</li>
+                    <li data-filter=".filter-banyo">Banyo & Mutfak</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="row portfolio-container" data-aos="fade-up" data-aos-delay="200">
+            <div class="col-lg-4 col-md-6 portfolio-item filter-tadilat">
+                <div class="portfolio-wrap">
+                    <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80" alt="">
+                    <div class="portfolio-info">
+                        <h4>Atakum Villa Salonu</h4>
+                        <p>Komple Zemin ve Asma Tavan</p>
+                        <span class="badge bg-warning text-dark mt-2">2025</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 portfolio-item filter-insaat">
+                <div class="portfolio-wrap">
+                    <img src="https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=600&q=80" alt="">
+                    <div class="portfolio-info">
+                        <h4>Tekkeköy İnşaat Projesi</h4>
+                        <p>Temel ve Betonarme İşleri</p>
+                        <span class="badge bg-warning text-dark mt-2">2024</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<section class="projects-cta">
+    <div class="container" data-aos="zoom-in">
+        <h3>Sizin Projeniz Bir Sonraki Olsun</h3>
+        <p class="text-white-50 mb-4">Ücretsiz keşif ve fiyatlandırma için hemen iletişime geçin.</p>
+        <a href="https://wa.me/905000000000" class="btn btn-warning btn-lg fw-bold rounded-pill px-5">
+            <i class="fab fa-whatsapp me-2"></i>WhatsApp'tan Yaz
+        </a>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        const filters = document.querySelectorAll('.portfolio-filters li');
+        const items = document.querySelectorAll('.portfolio-item');
+
+        filters.forEach(filter => {
+            filter.addEventListener('click', function () {
+                filters.forEach(f => f.classList.remove('filter-active'));
+                this.classList.add('filter-active');
+
+                const category = this.getAttribute('data-filter');
+
+                items.forEach(item => {
+                    item.style.display = 'none';
+                    item.classList.remove('aos-animate');
+
+                    if (category === '*' || item.classList.contains(category.substring(1))) {
+                        item.style.display = 'block';
+                        setTimeout(() => item.classList.add('aos-animate'), 50);
+                    }
+                });
+            });
+        });
+    </script>
+}

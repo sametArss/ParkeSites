@@ -1,0 +1,4 @@
+# Visual Studio cache ve temporary dosyaları
+.vs/
+bin/
+obj/
