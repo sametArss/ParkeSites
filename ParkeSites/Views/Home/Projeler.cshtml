@@ -1,5 +1,10 @@
-﻿@{
+﻿@using EntityLayer.Concrete
+@model List<Project>
+@{
     ViewData["Title"] = "Projelerimiz";
+
+    // Admin yetkisi kontrolü
+    bool isAdmin = User.Identity.IsAuthenticated && User.IsInRole("Admin");
 }
 
 @section Styles {
@@ -17,7 +22,6 @@
             margin-top: 70px;
         }
 
-        /* Projeler sayfasının altındaki siyah CTA (İletişim) alanı için */
         .projects-cta {
             background-color: var(--dark);
             color: white;
@@ -29,6 +33,31 @@
                 font-weight: 700;
                 margin-bottom: 15px;
             }
+
+        /* Admin Butonları İçin Stil */
+        .admin-actions {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .portfolio-wrap:hover .admin-actions {
+            opacity: 1;
+        }
+
+        /* Lightbox Carousel İyileştirmeleri */
+        #lightboxModal .modal-content {
+            background: transparent;
+            border: none;
+        }
+
+        #lightboxModal .btn-close {
+            filter: invert(1) grayscale(100%) brightness(200%); /* Çarpı ikonunu beyaz yapar */
+            opacity: 0.8;
+        }
     </style>
 }
 
@@ -36,46 +65,88 @@
     <div class="container" data-aos="fade-up">
         <h1 class="display-3 fw-bold">Projelerimiz</h1>
         <p class="lead">İmzamızı attığımız, gurur duyduğumuz işler.</p>
+
+        @if (isAdmin)
+        {
+            <button class="btn btn-warning btn-lg mt-3 fw-bold shadow-lg" data-bs-toggle="modal" data-bs-target="#addProjectModal">
+                <i class="fas fa-plus me-2"></i>Yeni Proje Ekle
+            </button>
+        }
     </div>
 </section>
 
 <section class="py-5">
     <div class="container">
-        <div class="row" data-aos="fade-up" data-aos-delay="100">
-            <div class="col-lg-12 d-flex justify-content-center">
-                <ul class="portfolio-filters">
-                    <li data-filter="*" class="filter-active">Tümü</li>
-                    <li data-filter=".filter-tadilat">Tadilat & Dekorasyon</li>
-                    <li data-filter=".filter-insaat">Kaba İnşaat</li>
-                    <li data-filter=".filter-banyo">Banyo & Mutfak</li>
-                </ul>
-            </div>
-        </div>
 
-        <div class="row portfolio-container" data-aos="fade-up" data-aos-delay="200">
-            <div class="col-lg-4 col-md-6 portfolio-item filter-tadilat">
-                <div class="portfolio-wrap">
-                    <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80" alt="">
-                    <div class="portfolio-info">
-                        <h4>Atakum Villa Salonu</h4>
-                        <p>Komple Zemin ve Asma Tavan</p>
-                        <span class="badge bg-warning text-dark mt-2">2025</span>
-                    </div>
+        @if (Model != null && Model.Any())
+        {
+            <div class="row" data-aos="fade-up" data-aos-delay="100">
+                <div class="col-lg-12 d-flex justify-content-center">
+                    <ul class="portfolio-filters">
+                        <li data-filter="*" class="filter-active">Tümü</li>
+                        <li data-filter=".filter-tadilat">Tadilat & Dekorasyon</li>
+                        <li data-filter=".filter-insaat">Kaba İnşaat</li>
+                        <li data-filter=".filter-banyo">Banyo & Mutfak</li>
+                    </ul>
                 </div>
             </div>
 
-            <div class="col-lg-4 col-md-6 portfolio-item filter-insaat">
-                <div class="portfolio-wrap">
-                    <img src="https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=600&q=80" alt="">
-                    <div class="portfolio-info">
-                        <h4>Tekkeköy İnşaat Projesi</h4>
-                        <p>Temel ve Betonarme İşleri</p>
-                        <span class="badge bg-warning text-dark mt-2">2024</span>
+            <div class="row portfolio-container" data-aos="fade-up" data-aos-delay="200">
+
+                @foreach (var item in Model)
+                {
+                    // Projenin kapak resmini bul, yoksa varsayılan (placeholder) bir resim göster
+                    var coverImg = item.ProjectImages?.FirstOrDefault(x => x.IsCover)?.ImageUrl ?? "https://via.placeholder.com/600x400?text=Gorsel+Yok";
+
+                    // LİGHTBOX İÇİN: Projeye ait tüm resimlerin URL'lerini bir JSON array'ine çeviriyoruz
+                    var allImages = item.ProjectImages?.Select(x => x.ImageUrl).ToList() ?? new List<string>();
+                    var imagesJson = System.Text.Json.JsonSerializer.Serialize(allImages);
+
+                    <div class="col-lg-4 col-md-6 portfolio-item @item.Category">
+                        <div class="portfolio-wrap">
+
+                            @if (isAdmin)
+                            {
+                                <div class="admin-actions">
+                                    <button class="btn btn-sm btn-primary shadow" data-bs-toggle="modal" data-bs-target="#editProjectModal"
+                                            onclick="loadEditData(@item.Id, '@Html.Raw(item.Title)', '@item.Category', '@Html.Raw(item.Description)', @item.Year)">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <form asp-action="DeleteProject" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('Bu projeyi silmek istediğinize emin misiniz?');">
+                                        <button type="submit" class="btn btn-sm btn-danger shadow"><i class="fas fa-trash"></i></button>
+                                    </form>
+                                </div>
+                            }
+
+                            <img src="@coverImg" alt="@item.Title">
+                            <div class="portfolio-info">
+                                <h4>@item.Title</h4>
+                                <p>@item.Description</p>
+                                <span class="badge bg-warning text-dark mt-2 mb-3">@item.Year</span>
+                                <br />
+                                <button class="btn btn-sm btn-outline-light rounded-pill px-3" onclick='openLightbox(@Html.Raw(imagesJson))'>
+                                    <i class="fas fa-search-plus me-1"></i> Galeriyi İncele
+                                </button>
+                            </div>
+                        </div>
                     </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="row" data-aos="fade-up">
+                <div class="col-12 text-center py-5">
+                    <i class="fas fa-folder-open fa-4x text-muted mb-3"></i>
+                    <h3 class="text-muted fw-bold">Henüz Eklenmiş Proje Bulunmuyor</h3>
+                    <p class="text-secondary">Şu an için gösterilecek bir proje kaydı yok.</p>
+                    @if (isAdmin)
+                    {
+                        <p class="mt-3">Yukarıdaki <strong>"Yeni Proje Ekle"</strong> butonuna tıklayarak ilk projenizi oluşturabilirsiniz.</p>
+                    }
                 </div>
             </div>
-
-        </div>
+        }
     </div>
 </section>
 
@@ -89,8 +160,134 @@
     </div>
 </section>
 
+<div class="modal fade" id="lightboxModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0 position-absolute top-0 end-0 z-3">
+                <button type="button" class="btn-close btn-close-white p-3" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0 text-center bg-dark rounded">
+                <div id="projectCarousel" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner" id="carouselInner">
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#projectCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#projectCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (isAdmin)
+{
+    <div class="modal fade" id="addProjectModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title"><i class="fas fa-plus me-2"></i>Yeni Proje Ekle</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="/Home/AddProject" method="post" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label class="form-label">Proje Başlığı</label>
+                                <input type="text" name="Title" class="form-control" required maxlength="200">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Yıl</label>
+                                <input type="number" name="Year" class="form-control" value="@DateTime.Now.Year" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Kategori</label>
+                                <select name="Category" class="form-select" required>
+                                    <option value="">Seçiniz...</option>
+                                    <option value="filter-tadilat">Tadilat & Dekorasyon</option>
+                                    <option value="filter-insaat">Kaba İnşaat</option>
+                                    <option value="filter-banyo">Banyo & Mutfak</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Proje Resmi (Kapak)</label>
+                                <input type="file" name="CoverImage" class="form-control" accept="image/*" required>
+                            </div>
+
+                            <div class="col-md-12">
+                                <label class="form-label">Galeri Resimleri (Birden Fazla Seçebilirsiniz)</label>
+                                <input type="file" name="GalleryImages" class="form-control" accept="image/*" multiple>
+                                <small class="text-muted">Proje detaylarında gösterilecek ekstra fotoğraflar.</small>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label">Açıklama</label>
+                                <textarea name="Description" class="form-control" rows="3"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                        <button type="submit" class="btn btn-warning fw-bold">Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editProjectModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Projeyi Düzenle</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="/Home/EditProject" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="Id" id="edit-id">
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label class="form-label">Proje Başlığı</label>
+                                <input type="text" name="Title" id="edit-title" class="form-control" required maxlength="200">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Yıl</label>
+                                <input type="number" name="Year" id="edit-year" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Kategori</label>
+                                <select name="Category" id="edit-category" class="form-select" required>
+                                    <option value="filter-tadilat">Tadilat & Dekorasyon</option>
+                                    <option value="filter-insaat">Kaba İnşaat</option>
+                                    <option value="filter-banyo">Banyo & Mutfak</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Yeni Resim (İsteğe Bağlı)</label>
+                                <input type="file" name="CoverImage" class="form-control" accept="image/*">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Açıklama</label>
+                                <textarea name="Description" id="edit-description" class="form-control" rows="3"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                        <button type="submit" class="btn btn-primary fw-bold">Güncelle</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
 @section Scripts {
     <script>
+        // AOS Animasyonları vs. ve Filtreleme kodu
         const filters = document.querySelectorAll('.portfolio-filters li');
         const items = document.querySelectorAll('.portfolio-item');
 
@@ -112,5 +309,41 @@
                 });
             });
         });
+
+        // Modala Veri Yükleme Scripti
+        function loadEditData(id, title, category, desc, year) {
+            document.getElementById('edit-id').value = id;
+            document.getElementById('edit-title').value = title;
+            document.getElementById('edit-category').value = category;
+            document.getElementById('edit-description').value = desc;
+            document.getElementById('edit-year').value = year;
+        }
+
+        // YENİ: LİGHTBOX'I DOLDURAN VE AÇAN FONKSİYON
+        function openLightbox(images) {
+            const carouselInner = document.getElementById('carouselInner');
+            carouselInner.innerHTML = ''; // Önceki resimleri temizle
+
+            // Hiç resim yoksa uyarı ver
+            if(!images || images.length === 0) {
+                alert("Bu projeye ait galeri resmi bulunamadı.");
+                return;
+            }
+
+            // Resimleri slider içine HTML olarak bas
+            images.forEach((imgUrl, index) => {
+                const isActive = index === 0 ? 'active' : '';
+                const itemHtml = `
+                    <div class="carousel-item ${isActive}">
+                        <img src="${imgUrl}" class="d-block w-100" style="max-height: 85vh; object-fit: contain;" alt="Proje Görseli">
+                    </div>
+                `;
+                carouselInner.innerHTML += itemHtml;
+            });
+
+            // Modalı ekranda göster
+            var myModal = new bootstrap.Modal(document.getElementById('lightboxModal'));
+            myModal.show();
+        }
     </script>
 }
