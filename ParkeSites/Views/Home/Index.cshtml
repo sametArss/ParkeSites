@@ -1,4 +1,4 @@
-﻿@using EntityLayer.Concrete
+@using EntityLayer.Concrete
 @model List<Project>
 @{
     ViewData["Title"] = "Premium İnşaat & Dekorasyon";
@@ -70,6 +70,20 @@
 
 <section id="anasayfa" class="hero">
     <div class="container">
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show rounded-4 shadow-sm mb-4" role="alert">
+                <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show rounded-4 shadow-sm mb-4" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
         <div class="row">
             <div class="col-lg-8" data-aos="fade-up" data-aos-duration="1000">
                 <h5 class="text-warning text-uppercase letter-spacing-2 fw-bold mb-3">Profesyonel Çözümler</h5>
@@ -187,3 +201,16 @@
         <a href="tel:05000000000" class="btn btn-modern btn-lg px-5 py-3 bg-white text-dark"><i class="fas fa-phone-alt me-2"></i>0500 000 00 00</a>
     </div>
 </section>
+
+@section Scripts {
+    <script>
+        setTimeout(function () {
+            var alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function (alert) {
+                alert.style.transition = "opacity 0.6s ease";
+                alert.style.opacity = "0";
+                setTimeout(function () { alert.remove(); }, 600);
+            });
+        }, 5000);
+    </script>
+}

@@ -1,4 +1,4 @@
-﻿@using EntityLayer.Concrete
+@using EntityLayer.Concrete
 @model List<Project>
 @{
     ViewData["Title"] = "Projelerimiz";
@@ -78,6 +78,21 @@
 <section class="py-5">
     <div class="container">
 
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show rounded-4 shadow-sm" role="alert">
+                <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show rounded-4 shadow-sm" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
         @if (Model != null && Model.Any())
         {
             <div class="row" data-aos="fade-up" data-aos-delay="100">
@@ -100,11 +115,6 @@
                     var allImages = item.ProjectImages?.Select(x => x.ImageUrl).ToList() ?? new List<string>();
                     var imagesJson = System.Text.Json.JsonSerializer.Serialize(allImages);
 
-                    // JS'e gönderirken tırnak işaretlerinin hata vermemesi için güvenli hale getiriyoruz
-                    var safeTitle = Html.Raw(item.Title?.Replace("'", "\\'") ?? "");
-                    var safeDesc = Html.Raw(item.Description?.Replace("'", "\\'").Replace("\n", "<br>") ?? "");
-
-                    // Kartta görünecek kısa açıklama (İlk 60 karakter)
                     var shortDesc = string.IsNullOrEmpty(item.Description) ? "" :
                     (item.Description.Length > 60 ? item.Description.Substring(0, 60) + "..." : item.Description);
 
@@ -114,8 +124,12 @@
                             @if (isAdmin)
                             {
                                 <div class="admin-actions">
-                                    <button class="btn btn-sm btn-primary shadow" data-bs-toggle="modal" data-bs-target="#editProjectModal"
-                                            onclick="loadEditData(@item.Id, '@safeTitle', '@item.Category', '@safeDesc', @item.Year)">
+                                    <button class="btn btn-sm btn-primary shadow btn-edit-project" data-bs-toggle="modal" data-bs-target="#editProjectModal"
+                                            data-id="@item.Id"
+                                            data-title="@item.Title"
+                                            data-category="@item.Category"
+                                            data-desc="@item.Description"
+                                            data-year="@item.Year">
                                         <i class="fas fa-edit"></i>
                                     </button>
                                     <form asp-action="DeleteProject" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('Bu projeyi silmek istediğinize emin misiniz?');">
@@ -127,11 +141,15 @@
                             <img src="@coverImg" alt="@item.Title">
                             <div class="portfolio-info">
                                 <h4 class="text-truncate" title="@item.Title">@item.Title</h4>
-                                <p class="small text-white-50 mb-2">@shortDesc</p>
+                                <p class="small text-white-50 mb-2" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">@shortDesc</p>
                                 <span class="badge bg-warning text-dark mt-1 mb-3">@item.Year</span>
                                 <br />
-                                <button class="btn btn-sm btn-outline-light rounded-pill px-3"
-                                        onclick="openLightbox(@imagesJson, '@safeTitle', '@safeDesc', '@item.Year', '@item.Category')">
+                                <button class="btn btn-sm btn-outline-light rounded-pill px-3 btn-lightbox"
+                                        data-images='@imagesJson'
+                                        data-title="@item.Title"
+                                        data-desc="@item.Description"
+                                        data-year="@item.Year"
+                                        data-category="@item.Category">
                                     <i class="fas fa-search-plus me-1"></i> Detaylı İncele
                                 </button>
                             </div>
@@ -307,6 +325,43 @@
 
 @section Scripts {
     <script>
+        // DOM yüklendiğinde Butonlara Event Listener Ekliyoruz (GÜVENLİ YÖNTEM)
+        document.addEventListener("DOMContentLoaded", function() {
+
+            // DÜZENLE BUTONLARI İÇİN
+            document.querySelectorAll('.btn-edit-project').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.getElementById('edit-id').value = this.getAttribute('data-id');
+                    document.getElementById('edit-title').value = this.getAttribute('data-title');
+                    document.getElementById('edit-category').value = this.getAttribute('data-category');
+                    document.getElementById('edit-year').value = this.getAttribute('data-year');
+
+                    let desc = this.getAttribute('data-desc');
+                    document.getElementById('edit-description').value = desc ? desc.replace(/<br>/g, '\n') : '';
+                });
+            });
+
+            // LİGHTBOX BUTONLARI İÇİN
+            document.querySelectorAll('.btn-lightbox').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const images = JSON.parse(this.getAttribute('data-images') || '[]');
+                    const title = this.getAttribute('data-title');
+                    let description = this.getAttribute('data-desc');
+                    const year = this.getAttribute('data-year');
+                    const category = this.getAttribute('data-category');
+
+                    // Açıklamadaki \n (enter) karakterlerini HTML'in anlayacağı <br> etiketine çevir
+                    if(description) {
+                        description = description.replace(/\r\n|\n/g, '<br>');
+                    }
+
+                    openLightbox(images, title, description, year, category);
+                });
+            });
+
+        });
+
+        // AOS Animasyonları vs. ve Filtreleme kodu
         const filters = document.querySelectorAll('.portfolio-filters li');
         const items = document.querySelectorAll('.portfolio-item');
 
@@ -329,18 +384,7 @@
             });
         });
 
-        function loadEditData(id, title, category, desc, year) {
-            document.getElementById('edit-id').value = id;
-            document.getElementById('edit-title').value = title;
-            document.getElementById('edit-category').value = category;
-
-            // Eğer <br> ile formatlanmışsa geri textarea için \n formatına çeviriyoruz
-            var unformattedDesc = desc ? desc.replace(/<br>/g, '\n') : '';
-            document.getElementById('edit-description').value = unformattedDesc;
-            document.getElementById('edit-year').value = year;
-        }
-
-        // GÜNCELLENMİŞ LİGHTBOX FONKSİYONU
+        // LİGHTBOX'I DOLDURAN VE AÇAN FONKSİYON
         function openLightbox(images, title, description, year, category) {
 
             document.getElementById('lightboxTitle').innerText = title;
@@ -375,5 +419,15 @@
             var myModal = new bootstrap.Modal(document.getElementById('lightboxModal'));
             myModal.show();
         }
+
+        // Hata/Başarı Mesajları için Oto-Gizleme
+        setTimeout(function () {
+            var alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function (alert) {
+                alert.style.transition = "opacity 0.6s ease";
+                alert.style.opacity = "0";
+                setTimeout(function () { alert.remove(); }, 600);
+            });
+        }, 5000);
     </script>
 }
