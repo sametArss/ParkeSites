@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr">
 
 <head>
@@ -11,9 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <link href="~/css/layout.css" rel="stylesheet" />
-
-  
-
+    <link rel="icon" type="image/png" href="~/img/ustayapi-logo.png">
     @RenderSection("Styles", required: false)
 </head>
 
@@ -21,8 +19,9 @@
 
     <nav class="navbar navbar-expand-lg fixed-top">
         <div class="container">
-            <a class="navbar-brand" href="/Home/Index">
-                <i class="fas fa-hammer text-warning me-2"></i>USTA<span class="text-warning">YAPI</span>
+            <a class="navbar-brand d-flex align-items-center" href="/Home/Index">
+                <img src="~/img/ustayapi-logo.png" alt="Usta Yapı Logo" height="40" class="me-2">
+                <span class="fw-bold">USTA<span class="text-warning">YAPI</span></span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>

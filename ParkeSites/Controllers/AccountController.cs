@@ -18,9 +18,10 @@ namespace ParkeSites.Controllers
             _logger = logger;
         }
 
+        [Authorize(Roles = "Admin")]// Sadece Admin rolündeki kullanıcılar erişebilir)]
         [HttpGet]
         public IActionResult Register() => View();
-
+        [Authorize(Roles = "Admin")]// Sadece Admin rolündeki kullanıcılar erişebilir)]
         [HttpPost]
         public async Task<IActionResult> Register(RegisterDto dto)
         {
@@ -99,7 +100,7 @@ namespace ParkeSites.Controllers
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Login");
         }
-
+        [Authorize(Roles = "Admin")] // Sadece Admin rolündeki kullanıcılar erişebilir)]
         [HttpPost]
         public async Task<IActionResult> ChangePassword(ChangePasswordDto dto)
         {
@@ -124,7 +125,7 @@ namespace ParkeSites.Controllers
             return RedirectToAction("Profile");
         }
 
-        [Authorize] // Sadece giriş yapmışlar girebilsin
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> Profile()
         {
