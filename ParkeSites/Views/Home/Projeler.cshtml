@@ -2,6 +2,8 @@
 @model List<Project>
 @{
     ViewData["Title"] = "Projelerimiz";
+    ViewData["MetaDescription"] = "Usta Yapı olarak bugüne kadar tamamladığımız lüks banyo, mutfak yenileme ve komple anahtar teslim inşaat projelerimizi inceleyin.";
+    ViewData["MetaKeywords"] = "inşaat projeleri, tamamlanan projeler, mutfak tadilatı, banyo yenileme, samsun dekorasyon projeleri";
 
     // Admin yetkisi kontrolü
     bool isAdmin = User.Identity.IsAuthenticated && User.IsInRole("Admin");
