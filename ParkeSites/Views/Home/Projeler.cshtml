@@ -55,7 +55,7 @@
         }
 
         #lightboxModal .btn-close {
-            filter: invert(1) grayscale(100%) brightness(200%); /* Çarpı ikonunu beyaz yapar */
+            filter: invert(1) grayscale(100%) brightness(200%);
             opacity: 0.8;
         }
     </style>
@@ -95,12 +95,18 @@
 
                 @foreach (var item in Model)
                 {
-                    // Projenin kapak resmini bul, yoksa varsayılan (placeholder) bir resim göster
                     var coverImg = item.ProjectImages?.FirstOrDefault(x => x.IsCover)?.ImageUrl ?? "https://via.placeholder.com/600x400?text=Gorsel+Yok";
 
-                    // LİGHTBOX İÇİN: Projeye ait tüm resimlerin URL'lerini bir JSON array'ine çeviriyoruz
                     var allImages = item.ProjectImages?.Select(x => x.ImageUrl).ToList() ?? new List<string>();
                     var imagesJson = System.Text.Json.JsonSerializer.Serialize(allImages);
+
+                    // JS'e gönderirken tırnak işaretlerinin hata vermemesi için güvenli hale getiriyoruz
+                    var safeTitle = Html.Raw(item.Title?.Replace("'", "\\'") ?? "");
+                    var safeDesc = Html.Raw(item.Description?.Replace("'", "\\'").Replace("\n", "<br>") ?? "");
+
+                    // Kartta görünecek kısa açıklama (İlk 60 karakter)
+                    var shortDesc = string.IsNullOrEmpty(item.Description) ? "" :
+                    (item.Description.Length > 60 ? item.Description.Substring(0, 60) + "..." : item.Description);
 
                     <div class="col-lg-4 col-md-6 portfolio-item @item.Category">
                         <div class="portfolio-wrap">
@@ -109,7 +115,7 @@
                             {
                                 <div class="admin-actions">
                                     <button class="btn btn-sm btn-primary shadow" data-bs-toggle="modal" data-bs-target="#editProjectModal"
-                                            onclick="loadEditData(@item.Id, '@Html.Raw(item.Title)', '@item.Category', '@Html.Raw(item.Description)', @item.Year)">
+                                            onclick="loadEditData(@item.Id, '@safeTitle', '@item.Category', '@safeDesc', @item.Year)">
                                         <i class="fas fa-edit"></i>
                                     </button>
                                     <form asp-action="DeleteProject" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('Bu projeyi silmek istediğinize emin misiniz?');">
@@ -120,12 +126,13 @@
 
                             <img src="@coverImg" alt="@item.Title">
                             <div class="portfolio-info">
-                                <h4>@item.Title</h4>
-                                <p>@item.Description</p>
-                                <span class="badge bg-warning text-dark mt-2 mb-3">@item.Year</span>
+                                <h4 class="text-truncate" title="@item.Title">@item.Title</h4>
+                                <p class="small text-white-50 mb-2">@shortDesc</p>
+                                <span class="badge bg-warning text-dark mt-1 mb-3">@item.Year</span>
                                 <br />
-                                <button class="btn btn-sm btn-outline-light rounded-pill px-3" onclick='openLightbox(@Html.Raw(imagesJson))'>
-                                    <i class="fas fa-search-plus me-1"></i> Galeriyi İncele
+                                <button class="btn btn-sm btn-outline-light rounded-pill px-3"
+                                        onclick="openLightbox(@imagesJson, '@safeTitle', '@safeDesc', '@item.Year', '@item.Category')">
+                                    <i class="fas fa-search-plus me-1"></i> Detaylı İncele
                                 </button>
                             </div>
                         </div>
@@ -161,14 +168,20 @@
 </section>
 
 <div class="modal fade" id="lightboxModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header border-0 pb-0 position-absolute top-0 end-0 z-3">
-                <button type="button" class="btn-close btn-close-white p-3" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content bg-dark text-white border-0 shadow-lg">
+
+            <div class="modal-header border-bottom border-secondary">
+                <div class="d-flex flex-column">
+                    <h4 class="modal-title fw-bold text-warning" id="lightboxTitle">Proje Başlığı</h4>
+                    <span class="badge bg-secondary w-auto" id="lightboxCategory">Kategori</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body p-0 text-center bg-dark rounded">
+
+            <div class="modal-body p-0">
                 <div id="projectCarousel" class="carousel slide" data-bs-ride="carousel">
-                    <div class="carousel-inner" id="carouselInner">
+                    <div class="carousel-inner bg-black" id="carouselInner">
                     </div>
                     <button class="carousel-control-prev" type="button" data-bs-target="#projectCarousel" data-bs-slide="prev">
                         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
@@ -177,7 +190,17 @@
                         <span class="carousel-control-next-icon" aria-hidden="true"></span>
                     </button>
                 </div>
+
+                <div class="p-4 bg-dark">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold m-0"><i class="fas fa-info-circle me-2 text-warning"></i>Proje Detayları</h5>
+                        <span class="fs-5 text-muted" id="lightboxYear"><i class="far fa-calendar-alt me-1"></i> 2024</span>
+                    </div>
+                    <p class="text-light" id="lightboxDescription" style="line-height: 1.8; font-size: 1.1rem;">
+                    </p>
+                </div>
             </div>
+
         </div>
     </div>
 </div>
@@ -211,18 +234,15 @@
                                     <option value="filter-banyo">Banyo & Mutfak</option>
                                 </select>
                             </div>
-
                             <div class="col-md-6">
                                 <label class="form-label">Proje Resmi (Kapak)</label>
                                 <input type="file" name="CoverImage" class="form-control" accept="image/*" required>
                             </div>
-
                             <div class="col-md-12">
                                 <label class="form-label">Galeri Resimleri (Birden Fazla Seçebilirsiniz)</label>
                                 <input type="file" name="GalleryImages" class="form-control" accept="image/*" multiple>
                                 <small class="text-muted">Proje detaylarında gösterilecek ekstra fotoğraflar.</small>
                             </div>
-
                             <div class="col-12">
                                 <label class="form-label">Açıklama</label>
                                 <textarea name="Description" class="form-control" rows="3"></textarea>
@@ -287,7 +307,6 @@
 
 @section Scripts {
     <script>
-        // AOS Animasyonları vs. ve Filtreleme kodu
         const filters = document.querySelectorAll('.portfolio-filters li');
         const items = document.querySelectorAll('.portfolio-item');
 
@@ -310,38 +329,49 @@
             });
         });
 
-        // Modala Veri Yükleme Scripti
         function loadEditData(id, title, category, desc, year) {
             document.getElementById('edit-id').value = id;
             document.getElementById('edit-title').value = title;
             document.getElementById('edit-category').value = category;
-            document.getElementById('edit-description').value = desc;
+
+            // Eğer <br> ile formatlanmışsa geri textarea için \n formatına çeviriyoruz
+            var unformattedDesc = desc ? desc.replace(/<br>/g, '\n') : '';
+            document.getElementById('edit-description').value = unformattedDesc;
             document.getElementById('edit-year').value = year;
         }
 
-        // YENİ: LİGHTBOX'I DOLDURAN VE AÇAN FONKSİYON
-        function openLightbox(images) {
-            const carouselInner = document.getElementById('carouselInner');
-            carouselInner.innerHTML = ''; // Önceki resimleri temizle
+        // GÜNCELLENMİŞ LİGHTBOX FONKSİYONU
+        function openLightbox(images, title, description, year, category) {
 
-            // Hiç resim yoksa uyarı ver
+            document.getElementById('lightboxTitle').innerText = title;
+            document.getElementById('lightboxDescription').innerHTML = description ? description : "Bu proje için bir açıklama girilmemiş.";
+            document.getElementById('lightboxYear').innerHTML = `<i class="far fa-calendar-alt me-1"></i> ${year}`;
+
+            // Kategoriyi güzel bir isimle göster
+            let catName = "Diğer";
+            if(category && category.includes("tadilat")) catName = "Tadilat & Dekorasyon";
+            else if(category && category.includes("insaat")) catName = "Kaba İnşaat";
+            else if(category && category.includes("banyo")) catName = "Banyo & Mutfak";
+            else catName = category;
+            document.getElementById('lightboxCategory').innerText = catName;
+
+            const carouselInner = document.getElementById('carouselInner');
+            carouselInner.innerHTML = '';
+
             if(!images || images.length === 0) {
-                alert("Bu projeye ait galeri resmi bulunamadı.");
-                return;
+                carouselInner.innerHTML = `<div class="carousel-item active text-center p-5"><h5 class="text-muted">Görsel bulunamadı.</h5></div>`;
+            } else {
+                images.forEach((imgUrl, index) => {
+                    const isActive = index === 0 ? 'active' : '';
+                    const itemHtml = `
+                        <div class="carousel-item ${isActive}">
+                            <img src="${imgUrl}" class="d-block w-100" style="height: 60vh; object-fit: contain;" alt="Proje Görseli">
+                        </div>
+                    `;
+                    carouselInner.innerHTML += itemHtml;
+                });
             }
 
-            // Resimleri slider içine HTML olarak bas
-            images.forEach((imgUrl, index) => {
-                const isActive = index === 0 ? 'active' : '';
-                const itemHtml = `
-                    <div class="carousel-item ${isActive}">
-                        <img src="${imgUrl}" class="d-block w-100" style="max-height: 85vh; object-fit: contain;" alt="Proje Görseli">
-                    </div>
-                `;
-                carouselInner.innerHTML += itemHtml;
-            });
-
-            // Modalı ekranda göster
             var myModal = new bootstrap.Modal(document.getElementById('lightboxModal'));
             myModal.show();
         }

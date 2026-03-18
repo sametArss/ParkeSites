@@ -1,4 +1,6 @@
-﻿@{
+﻿@using EntityLayer.Concrete
+@model List<Project>
+@{
     ViewData["Title"] = "Premium İnşaat & Dekorasyon";
 }
 
@@ -138,39 +140,42 @@
         </div>
 
         <div class="row g-4">
-            <div class="col-md-4" data-aos="zoom-in" data-aos-delay="100">
-                <div class="portfolio-item">
-                    <img src="https://images.unsplash.com/photo-1484154218962-a1c002085d2f?auto=format&fit=crop&w=500&q=80" alt="Mutfak Tadilatı">
-                    <div class="portfolio-overlay">
-                        <div class="text-center text-white">
-                            <h5 class="fw-bold">Modern Mutfak</h5>
-                            <p class="small">Tadilat & Dekorasyon</p>
+            @if (Model != null && Model.Any())
+            {
+                int delay = 100; // Animasyonların sırayla gelmesi için
+                foreach (var item in Model)
+                {
+                    var coverImg = item.ProjectImages?.FirstOrDefault(x => x.IsCover)?.ImageUrl ?? "https://via.placeholder.com/500x400?text=Gorsel+Yok";
+
+                    // Kategori ismini ekranda güzel göstermek için ayarlıyoruz
+                    string catName = "Diğer";
+                    if (item.Category.Contains("tadilat")) catName = "Tadilat & Dekorasyon";
+                    else if (item.Category.Contains("insaat")) catName = "Kaba İnşaat";
+                    else if (item.Category.Contains("banyo")) catName = "Banyo & Mutfak";
+
+                    <div class="col-md-4" data-aos="zoom-in" data-aos-delay="@delay">
+                        <div class="portfolio-item" onclick="window.location.href='/Home/Projeler'">
+                            <img src="@coverImg" alt="@item.Title">
+                            <div class="portfolio-overlay">
+                                <div class="text-center text-white px-3">
+                                    <h5 class="fw-bold text-truncate">@item.Title</h5>
+                                    <p class="small text-warning mb-0">@catName</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
+                    delay += 100;
+                }
+            }
+            else
+            {
+                <div class="col-12 text-center py-4">
+                    <p class="text-muted mb-0">Henüz sergilenecek bir proje bulunmuyor.</p>
                 </div>
-            </div>
-            <div class="col-md-4" data-aos="zoom-in" data-aos-delay="200">
-                <div class="portfolio-item">
-                    <img src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=500&q=80" alt="Banyo Yenileme">
-                    <div class="portfolio-overlay">
-                        <div class="text-center text-white">
-                            <h5 class="fw-bold">Lüks Banyo</h5>
-                            <p class="small">Fayans & Tesisat</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4" data-aos="zoom-in" data-aos-delay="300">
-                <div class="portfolio-item">
-                    <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=500&q=80" alt="Salon Dekorasyon">
-                    <div class="portfolio-overlay">
-                        <div class="text-center text-white">
-                            <h5 class="fw-bold">Villa Salonu</h5>
-                            <p class="small">Boya & Alçıpan</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            }
+        </div>
+        <div class="text-center mt-4 d-block d-md-none">
+            <a href="/Home/Projeler" class="btn btn-outline-dark rounded-pill px-4">Tümünü Gör <i class="fas fa-arrow-right ms-2"></i></a>
         </div>
     </div>
 </section>

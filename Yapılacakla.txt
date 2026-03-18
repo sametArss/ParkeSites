@@ -1,0 +1,6 @@
+Projeyi silince resimler de silinsin 
+Proje güncellemeye bakılacak
+Proje açıklama ve Description ayarlanıcak 
+AnaSayfaya Proje getirme ayarlanacak 
+Kullanıcı şifre sıfırlama kısmı ayarlanıcak 
+Bellki o tamamlanmış projeler kısmında zaman blokları ayarlanıcak 

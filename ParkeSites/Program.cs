@@ -1,4 +1,4 @@
-using BusiniessLayer.Abstract;
+ï»¿using BusiniessLayer.Abstract;
 using BusiniessLayer.Concrete;
 using DataAcsessLayer.Abstract;
 using DataAcsessLayer.Concrete.Context;
@@ -16,30 +16,32 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
-// --- EKSÝK OLAN DI KAYDI EKLENDÝ ---
-// UserManager içindeki _httpContextAccessor için bu þart!
+// --- EKSÄ°K OLAN DI KAYDI EKLENDÄ° ---
+// UserManager iÃ§indeki _httpContextAccessor iÃ§in bu ÅŸart!
 builder.Services.AddHttpContextAccessor();
 
 // Dependency Injection
 builder.Services.AddScoped<IProjectDal, EFProjectDal>();
-//builder.Services.AddScoped<IProjectService, ProjectManager>(); // Ýleride açarsýn
+builder.Services.AddScoped<ProjectService, ProjectManager>(); // Ä°leride aÃ§arsÄ±n
 
 builder.Services.AddScoped<IProjectImageDal, EFProjectImageDal>();
-//builder.Services.AddScoped<IProjectImageService, ProjectImageManager>(); // Ýleride açarsýn
+//builder.Services.AddScoped<IProjectImageService, ProjectImageManager>(); // Ä°leride aÃ§arsÄ±n
 
 builder.Services.AddScoped<IUserDal, EFUserDal>();
 builder.Services.AddScoped<IUserService, UserManager>();
 
-// Authentication (Cookie Ayarlarý Harika!)
+// Authentication (Cookie AyarlarÄ± Harika!)
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
         options.LoginPath = "/Account/Login";
         options.LogoutPath = "/Account/Logout";
-        options.AccessDeniedPath = "/Account/AccessDenied"; // Yetkisi olmayan biri girerse buraya atar (Opsiyonel ama iyidir)
-        options.ExpireTimeSpan = TimeSpan.FromDays(7);
+        options.AccessDeniedPath = "/Account/AccessDenied";
+
+        options.ExpireTimeSpan = TimeSpan.FromHours(1); // ðŸ”¥ 1 saat
+        options.SlidingExpiration = false; // ðŸ”¥ aktifse logout eder
+
         options.Cookie.Name = "ArslanParkeAdminAuth";
-        options.SlidingExpiration = true; // Kullanýcý aktifse 7 günlük süreyi sürekli uzatýr
     });
 
 var app = builder.Build();
@@ -55,7 +57,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 
-// Authentication and Authorization sýralamasý çok doðru
+// Authentication and Authorization sÄ±ralamasÄ± Ã§ok doÄŸru
 app.UseAuthentication();
 app.UseAuthorization();
 
