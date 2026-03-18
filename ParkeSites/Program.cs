@@ -5,68 +5,86 @@ using DataAcsessLayer.Concrete.Context;
 using DataAcsessLayer.EntityFramework;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
-var builder = WebApplication.CreateBuilder(args);
+// YENİ: Serilog Ayarları (Gereksiz Loglar Filtrelendi)
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    // ŞU 3 SATIR İLE SİSTEM VE SQL LOGLARINI SUSTURUYORUZ (Sadece Hata/Uyarı varsa yazacak)
+    .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
+    .MinimumLevel.Override("Microsoft.EntityFrameworkCore", Serilog.Events.LogEventLevel.Warning)
+    .MinimumLevel.Override("System", Serilog.Events.LogEventLevel.Warning)
+    .WriteTo.Console()
+    .WriteTo.File("logs/arslanparke-log-.txt", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
-
-builder.Services.AddDbContext<AppDbContext>(options =>
+try
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
-});
+    Log.Information("Uygulama başlatılıyor...");
 
-// --- EKSİK OLAN DI KAYDI EKLENDİ ---
-// UserManager içindeki _httpContextAccessor için bu şart!
-builder.Services.AddHttpContextAccessor();
+    var builder = WebApplication.CreateBuilder(args);
 
-// Dependency Injection
-builder.Services.AddScoped<IProjectDal, EFProjectDal>();
-builder.Services.AddScoped<ProjectService, ProjectManager>(); // İleride açarsın
+    builder.Host.UseSerilog();
 
-builder.Services.AddScoped<IProjectImageDal, EFProjectImageDal>();
-//builder.Services.AddScoped<IProjectImageService, ProjectImageManager>(); // İleride açarsın
+    // Add services to the container.
+    builder.Services.AddControllersWithViews();
 
-builder.Services.AddScoped<IUserDal, EFUserDal>();
-builder.Services.AddScoped<IUserService, UserManager>();
-
-// Authentication (Cookie Ayarları Harika!)
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
+    builder.Services.AddDbContext<AppDbContext>(options =>
     {
-        options.LoginPath = "/Account/Login";
-        options.LogoutPath = "/Account/Logout";
-        options.AccessDeniedPath = "/Account/AccessDenied";
-
-        options.ExpireTimeSpan = TimeSpan.FromHours(1); // 🔥 1 saat
-        options.SlidingExpiration = false; // 🔥 aktifse logout eder
-
-        options.Cookie.Name = "ArslanParkeAdminAuth";
+        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
     });
 
-var app = builder.Build();
+    builder.Services.AddHttpContextAccessor();
 
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
+    // Dependency Injection
+    builder.Services.AddScoped<IProjectDal, EFProjectDal>();
+    builder.Services.AddScoped<ProjectService, ProjectManager>();
+
+    builder.Services.AddScoped<IProjectImageDal, EFProjectImageDal>();
+    builder.Services.AddScoped<IUserDal, EFUserDal>();
+    builder.Services.AddScoped<IUserService, UserManager>();
+
+    // Authentication 
+    builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+        .AddCookie(options =>
+        {
+            options.LoginPath = "/Account/Login";
+            options.LogoutPath = "/Account/Logout";
+            options.AccessDeniedPath = "/Account/AccessDenied";
+
+            options.ExpireTimeSpan = TimeSpan.FromHours(1);
+            options.SlidingExpiration = false;
+
+            options.Cookie.Name = "ArslanParkeAdminAuth";
+        });
+
+    var app = builder.Build();
+
+    if (!app.Environment.IsDevelopment())
+    {
+        app.UseExceptionHandler("/Home/Error");
+        app.UseHsts();
+    }
+
+    app.UseHttpsRedirection();
+    app.UseRouting();
+
+    app.UseAuthentication();
+    app.UseAuthorization();
+
+    app.UseStaticFiles();
+
+    app.MapControllerRoute(
+        name: "default",
+        pattern: "{controller=Home}/{action=Index}/{id?}");
+
+    app.Run();
 }
-
-app.UseHttpsRedirection();
-app.UseRouting();
-
-// Authentication and Authorization sıralaması çok doğru
-app.UseAuthentication();
-app.UseAuthorization();
-
-//app.MapStaticAssets();
-app.UseStaticFiles();
-
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
-    
-
-app.Run();
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Uygulama beklenmedik bir şekilde çöktü!");
+}
+finally
+{
+    Log.CloseAndFlush();
+}

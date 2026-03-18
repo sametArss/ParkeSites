@@ -12,6 +12,8 @@
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <link href="~/css/layout.css" rel="stylesheet" />
 
+  
+
     @RenderSection("Styles", required: false)
 </head>
 
@@ -25,6 +27,7 @@
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
+
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center">
                     <li class="nav-item"><a class="nav-link" href="/Home/Index">Anasayfa</a></li>
@@ -32,6 +35,33 @@
                     <li class="nav-item ms-lg-3">
                         <a href="https://wa.me/905000000000" class="btn btn-warning rounded-pill px-4 fw-bold">Teklif Al</a>
                     </li>
+
+                    @if (User.Identity.IsAuthenticated && User.IsInRole("Admin"))
+                    {
+                        <li class="nav-item dropdown ms-lg-4 mt-3 mt-lg-0">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center p-0" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user-circle fs-2 text-dark"></i>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2" aria-labelledby="adminDropdown">
+                                <li>
+                                    <span class="dropdown-item-text text-muted small fw-bold">
+                                        Merhaba, @User.Identity.Name
+                                    </span>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item fw-medium py-2" href="/Account/Profile">
+                                        <i class="fas fa-id-card me-2 text-secondary"></i> Profilim
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item fw-medium text-danger py-2" href="/Account/Logout">
+                                        <i class="fas fa-sign-out-alt me-2"></i> Çıkış Yap
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    }
                 </ul>
             </div>
         </div>

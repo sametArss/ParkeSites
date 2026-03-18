@@ -75,7 +75,7 @@ namespace ParkeSites.Controllers
                     authProperties);
 
                 TempData["Success"] = "Giriş başarılı ...";
-                return RedirectToAction("Index", "Connect");
+                return RedirectToAction("Index", "Home");
             }
             catch (Exception ex)
             {
@@ -86,9 +86,15 @@ namespace ParkeSites.Controllers
         }
 
         // --- YENİ EKLENDİ: Çıkış Yapma Metodu ---
+        
         [HttpGet]
         public async Task<IActionResult> Logout()
         {
+            string email = User.FindFirst(ClaimTypes.Email)?.Value ?? User.Identity?.Name ?? "Bilinmeyen";
+            string ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Bilinmeyen IP";
+
+            _logger.LogInformation("[AUTH] Logout success | Email={Email} IP={Ip}", email, ip);
+
             // Cookie'yi silerek oturumu güvenli bir şekilde kapatır
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Login");

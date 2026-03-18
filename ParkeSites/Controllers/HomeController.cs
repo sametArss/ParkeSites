@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ParkeSites.Models;
 using System.Diagnostics;
+using System.Security.Claims; // Ekledik
 
 namespace ParkeSites.Controllers
 {
@@ -20,6 +21,10 @@ namespace ParkeSites.Controllers
             _projectService = projectService;
             _webHostEnvironment = webHostEnvironment;
         }
+
+        // Kullanıcı IP ve Mailini bulan yardımcı metotlar
+        private string GetIp() => HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Bilinmeyen IP";
+        private string GetEmail() => User.FindFirst(ClaimTypes.Email)?.Value ?? User.Identity?.Name ?? "Bilinmeyen Kullanıcı";
 
         public async Task<IActionResult> Index()
         {
@@ -40,10 +45,15 @@ namespace ParkeSites.Controllers
             try
             {
                 await _projectService.AddProjectAsync(project, CoverImage, GalleryImages, _webHostEnvironment.WebRootPath);
+                
+                // YENİ: İşlemi Logla
+                _logger.LogInformation("[PROJE EKLENDİ] Başlık: {Title} | Ekleyen: {Email} | IP: {Ip}", project.Title, GetEmail(), GetIp());
+                
                 TempData["Success"] = "Proje ve galerisi başarıyla eklendi!";
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "[HATA - PROJE EKLEME] Ekleyen: {Email} | IP: {Ip}", GetEmail(), GetIp());
                 TempData["Error"] = "Proje eklenirken hata: " + ex.Message;
             }
 
@@ -57,10 +67,15 @@ namespace ParkeSites.Controllers
             try
             {
                 await _projectService.UpdateProjectAsync(project, CoverImage, _webHostEnvironment.WebRootPath);
+                
+                // YENİ: İşlemi Logla
+                _logger.LogInformation("[PROJE GÜNCELLENDİ] ID: {Id}, Başlık: {Title} | Güncelleyen: {Email} | IP: {Ip}", project.Id, project.Title, GetEmail(), GetIp());
+                
                 TempData["Success"] = "Proje başarıyla güncellendi!";
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "[HATA - PROJE GÜNCELLEME] Güncelleyen: {Email} | IP: {Ip}", GetEmail(), GetIp());
                 TempData["Error"] = "Güncelleme hatası: " + ex.Message;
             }
 
@@ -74,10 +89,15 @@ namespace ParkeSites.Controllers
             try
             {
                 await _projectService.DeleteProjectAsync(id, _webHostEnvironment.WebRootPath);
+                
+                // YENİ: İşlemi Logla
+                _logger.LogInformation("[PROJE SİLİNDİ] ID: {Id} | Silen: {Email} | IP: {Ip}", id, GetEmail(), GetIp());
+                
                 TempData["Success"] = "Proje ve tüm resimleri silindi!";
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "[HATA - PROJE SİLME] Silen: {Email} | IP: {Ip}", GetEmail(), GetIp());
                 TempData["Error"] = "Silinirken hata oluştu: " + ex.Message;
             }
 

@@ -1,0 +1,151 @@
+﻿@using EntityLayer.Concrete
+@model User
+@{
+    ViewData["Title"] = "Profilim";
+}
+
+@section Styles {
+    <style>
+        .page-header {
+            /* Arka plana şık bir ofis/çalışma masası görseli koydum, değiştirebilirsin */
+            background: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1541888086425-d81bb19240f5?auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            height: 30vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            margin-top: 70px;
+        }
+
+        .profile-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            margin-top: -60px; /* Kartı header'ın üstüne hafifçe bindirerek modern bir hava kattım */
+            position: relative;
+            z-index: 10;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            background: var(--primary);
+            color: var(--dark);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            margin: 0 auto 20px auto;
+            border: 5px solid white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .input-group-text {
+            background-color: #f8f9fa;
+        }
+    </style>
+}
+
+<section class="page-header">
+    <div class="container" data-aos="fade-up">
+        <h1 class="display-4 fw-bold">Profil Bilgileri</h1>
+    </div>
+</section>
+
+<section class="py-5 mb-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-5 col-md-8" data-aos="fade-up" data-aos-delay="100">
+
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show rounded-4 shadow-sm" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show rounded-4 shadow-sm" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                <div class="profile-card text-center">
+                    <div class="profile-avatar">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+
+                    <h3 class="fw-bold mb-1">@Model.FullName</h3>
+                    <p class="text-muted mb-3">@Model.Email</p>
+
+                    <span class="badge bg-dark text-warning px-3 py-2 rounded-pill mb-4">
+                        <i class="fas fa-shield-alt me-1"></i> Yetki: @Model.Role
+                    </span>
+
+                    <hr class="text-muted opacity-25 mb-4">
+
+                    <div class="d-grid gap-3">
+                        <button class="btn btn-outline-dark rounded-pill py-2 fw-bold" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                            <i class="fas fa-key me-2"></i>Şifre Değiştir
+                        </button>
+                        <a href="/Account/Logout" class="btn btn-danger rounded-pill py-2 fw-bold">
+                            <i class="fas fa-sign-out-alt me-2"></i>Çıkış Yap
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-header bg-dark text-white" style="border-top-left-radius: 20px; border-top-right-radius: 20px;">
+                <h5 class="modal-title"><i class="fas fa-lock text-warning me-2"></i>Şifre Değiştir</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form action="/Account/ChangePassword" method="post">
+                <div class="modal-body p-4">
+
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-bold">Mevcut Şifre</label>
+                        <div class="input-group">
+                            <span class="input-group-text border-end-0"><i class="fas fa-unlock text-muted"></i></span>
+                            <input type="password" name="OldPassword" class="form-control border-start-0 bg-light" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-bold">Yeni Şifre</label>
+                        <div class="input-group">
+                            <span class="input-group-text border-end-0"><i class="fas fa-key text-muted"></i></span>
+                            <input type="password" name="NewPassword" class="form-control border-start-0 bg-light" required minlength="6">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label text-muted small fw-bold">Yeni Şifre (Tekrar)</label>
+                        <div class="input-group">
+                            <span class="input-group-text border-end-0"><i class="fas fa-check text-muted"></i></span>
+                            <input type="password" name="ConfirmPassword" class="form-control border-start-0 bg-light" required minlength="6">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-warning w-100 rounded-pill fw-bold py-2">
+                        Şifreyi Güncelle
+                    </button>
+
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
